@@ -10,12 +10,25 @@ set -ex
 
 BUILD_DATE="$(date -u +'%Y-%m-%d')"
 
-SHOULD_BUILD_BASE="$(grep -m 1 build_base build.yml | ggrep -o -P '(?<=").*(?=")')"
-SHOULD_BUILD_SPARK="$(grep -m 1 build_spark build.yml | ggrep -o -P '(?<=").*(?=")')"
-SHOULD_BUILD_JUPYTERLAB="$(grep -m 1 build_jupyter build.yml | ggrep -o -P '(?<=").*(?=")')"
+# Detect grep version to enable Perl regex (PCRE) support (-P flag)
+if grep --version | grep -q 'GNU grep'; then
+  GREP_WITH_PCRE="grep"
+else
+  GREP_WITH_PCRE="ggrep"
+  # check if ggrep is installed
+  if ! command -v ggrep &> /dev/null
+  then
+    echo "ggrep not found, please install it (e.g. 'brew install grep')"
+    exit 1
+  fi
+fi
 
-SPARK_VERSION="$(grep -m 1 spark build.yml | ggrep -o -P '(?<=").*(?=")')"
-JUPYTERLAB_VERSION="$(grep -m 1 jupyterlab build.yml | ggrep -o -P '(?<=").*(?=")')"
+SHOULD_BUILD_BASE="$(grep -m 1 build_base build.yml | $GREP_WITH_PCRE -o -P '(?<=").*(?=")')"
+SHOULD_BUILD_SPARK="$(grep -m 1 build_spark build.yml | $GREP_WITH_PCRE -o -P '(?<=").*(?=")')"
+SHOULD_BUILD_JUPYTERLAB="$(grep -m 1 build_jupyter build.yml | $GREP_WITH_PCRE -o -P '(?<=").*(?=")')"
+
+SPARK_VERSION="$(grep -m 1 spark build.yml | $GREP_WITH_PCRE -o -P '(?<=").*(?=")')"
+JUPYTERLAB_VERSION="$(grep -m 1 jupyterlab build.yml | $GREP_WITH_PCRE -o -P '(?<=").*(?=")')"
 
 SPARK_VERSION_MAJOR=${SPARK_VERSION:0:1}
 
