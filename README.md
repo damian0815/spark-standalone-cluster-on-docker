@@ -53,13 +53,13 @@ docker-compose up
 
 ### Download from Docker Hub (easier)
 
-1. Download the [docker compose](docker-compose.yml) file;
+1. Download the [docker compose](build/docker-compose.yml) file;
 
 ```bash
 curl -LO https://raw.githubusercontent.com/cluster-apps-on-docker/spark-standalone-cluster-on-docker/master/docker-compose.yml
 ```
 
-2. Edit the [docker compose](docker-compose.yml) file with your favorite tech stack version, check **apps** [supported versions](#tech-stack);
+2. Edit the [docker compose](build/docker-compose.yml) file with your favorite tech stack version, check **apps** [supported versions](#tech-stack);
 3. Start the cluster;
 
 ```bash

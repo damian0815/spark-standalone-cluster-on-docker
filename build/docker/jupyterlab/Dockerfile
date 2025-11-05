@@ -11,10 +11,6 @@ LABEL org.label-schema.description="JupyterLab image"
 LABEL org.label-schema.url="https://github.com/andre-marcos-perez/spark-cluster-on-docker"
 LABEL org.label-schema.schema-version="1.0"
 
-# -- Layer: Notebooks and data
-
-ADD workspace/ ${SHARED_WORKSPACE}/
-
 # -- Layer: JupyterLab + Python kernel for PySpark
 
 ARG spark_version
@@ -50,4 +46,6 @@ RUN apt-get install -y r-base-dev && \
 EXPOSE 8888
 
 WORKDIR ${SHARED_WORKSPACE}
-CMD jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --allow-root --NotebookApp.token=
+
+# disable delete_to_trash to avoid permissions issues
+CMD jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --allow-root --NotebookApp.token= --FileContentsManager.delete_to_trash=False
