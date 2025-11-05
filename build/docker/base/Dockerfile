@@ -1,6 +1,6 @@
-ARG debian_buster_image_tag=8-jre-slim
-FROM openjdk:${debian_buster_image_tag}
-LABEL manteiner="Andre Perez <andre.marcos.perez@gmail.com>"
+ARG eclipse_temurin_image_tag=17-jdk-jammy
+FROM eclipse-temurin:${eclipse_temurin_image_tag}
+LABEL mantainer="Andre Perez <andre.marcos.perez@gmail.com>"
 
 # -- Layer: Image Metadata
 
@@ -16,6 +16,12 @@ LABEL org.label-schema.schema-version="1.0"
 
 ARG scala_version
 ARG shared_workspace=/opt/workspace
+
+# update old Debian sources to archive.debian.org
+RUN sed -i 's/deb.debian.org/archive.debian.org/g' /etc/apt/sources.list && \
+    sed -i 's/security.debian.org/archive.debian.org/g' /etc/apt/sources.list && \
+    sed -i '/stretch-updates/d' /etc/apt/sources.list && \
+    apt-get update 
 
 RUN mkdir -p ${shared_workspace}/data && \
     mkdir -p /usr/share/man/man1 && \

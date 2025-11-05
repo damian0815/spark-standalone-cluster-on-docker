@@ -6,14 +6,16 @@
 # -- Variables ---------------------------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------------------------------------
 
+set -ex
+
 BUILD_DATE="$(date -u +'%Y-%m-%d')"
 
-SHOULD_BUILD_BASE="$(grep -m 1 build_base build.yml | grep -o -P '(?<=").*(?=")')"
-SHOULD_BUILD_SPARK="$(grep -m 1 build_spark build.yml | grep -o -P '(?<=").*(?=")')"
-SHOULD_BUILD_JUPYTERLAB="$(grep -m 1 build_jupyter build.yml | grep -o -P '(?<=").*(?=")')"
+SHOULD_BUILD_BASE="$(grep -m 1 build_base build.yml | ggrep -o -P '(?<=").*(?=")')"
+SHOULD_BUILD_SPARK="$(grep -m 1 build_spark build.yml | ggrep -o -P '(?<=").*(?=")')"
+SHOULD_BUILD_JUPYTERLAB="$(grep -m 1 build_jupyter build.yml | ggrep -o -P '(?<=").*(?=")')"
 
-SPARK_VERSION="$(grep -m 1 spark build.yml | grep -o -P '(?<=").*(?=")')"
-JUPYTERLAB_VERSION="$(grep -m 1 jupyterlab build.yml | grep -o -P '(?<=").*(?=")')"
+SPARK_VERSION="$(grep -m 1 spark build.yml | ggrep -o -P '(?<=").*(?=")')"
+JUPYTERLAB_VERSION="$(grep -m 1 jupyterlab build.yml | ggrep -o -P '(?<=").*(?=")')"
 
 SPARK_VERSION_MAJOR=${SPARK_VERSION:0:1}
 
@@ -24,7 +26,7 @@ then
   SCALA_KERNEL_VERSION="0.6.0"
 elif [[ "${SPARK_VERSION_MAJOR}"  == "3" ]]
 then
-  HADOOP_VERSION="3.2"
+  HADOOP_VERSION="3"
   SCALA_VERSION="2.12.10"
   SCALA_KERNEL_VERSION="0.10.9"
 else
@@ -38,8 +40,12 @@ fi
 function cleanContainers() {
 
     container="$(docker ps -a | grep 'jupyterlab' | awk '{print $1}')"
-    docker stop "${container}"
-    docker rm "${container}"
+    if [ -z "${container}" ]; then
+      echo "No jupyterlab container found"
+      else
+        docker stop "${container}"
+        docker rm "${container}"
+    fi
 
     container="$(docker ps -a | grep 'spark-worker' -m 1 | awk '{print $1}')"
     while [ -n "${container}" ];
@@ -50,16 +56,28 @@ function cleanContainers() {
     done
 
     container="$(docker ps -a | grep 'spark-master' | awk '{print $1}')"
-    docker stop "${container}"
-    docker rm "${container}"
+    if [ -n "${container}" ]; then
+      docker stop "${container}"
+      docker rm "${container}"
+    else
+      echo "No spark-master container found"
+    fi
 
     container="$(docker ps -a | grep 'spark-base' | awk '{print $1}')"
-    docker stop "${container}"
-    docker rm "${container}"
+    if [ -n "${container}" ]; then
+      docker stop "${container}"
+      docker rm "${container}"
+    else
+      echo "No spark-base container found"
+    fi
 
     container="$(docker ps -a | grep 'base' | awk '{print $1}')"
-    docker stop "${container}"
-    docker rm "${container}"
+    if [ -n "${container}" ]; then
+      docker stop "${container}"
+      docker rm "${container}"
+    else
+      echo "No base container found"
+    fi
 
 }
 
@@ -85,7 +103,9 @@ function cleanImages() {
 }
 
 function cleanVolume() {
+  set +e
   docker volume rm "hadoop-distributed-file-system"
+  set -e
 }
 
 function buildImages() {
