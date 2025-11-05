@@ -7,10 +7,6 @@ volumes:
   shared-workspace:
     name: "hadoop-distributed-file-system"
     driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ./workspace
 services:
   jupyterlab:
     image: jupyterlab:3.6.8-spark-3.5.7
@@ -68,11 +64,11 @@ services:
       - shared-workspace:/opt/workspace
     depends_on:
       - spark-master
-#  init-workspace:
-#    # Init container to populate the volume
-#    image: busybox:latest
-#    volumes:
-#      - shared-workspace:/target
-#      - ./workspace:/source:ro
-#    command: sh -c "cp -r /source/* /target/ && echo 'shared workspace initialized'"
-#    restart: "no"
+  init-workspace:
+    # Init container to populate the volume
+    image: busybox:latest
+    volumes:
+      - ./workspace:/source:ro
+      - shared-workspace:/target
+    command: sh -c "cp -r /source/* /target/ && echo 'shared workspace initialized'"
+    restart: "no"
